@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+        /*下面顺序
+        1、先写图片定位
+        2、数字定位
+        3、设置大于号小于号
+        4、设置数字的底色变化，鼠标点击哪个数字就显示不一样的颜色
+
+        5、设置js 数字轮播图片
+            1、绑定数字的背景颜色
+            2、绑定数字和图片
+            3、实现图片自动轮播  定时器
+            4、实现手动点击数字控制图片 
+        6、实现左右点击轮播
+
+        */
+
+        *{
+            margin: 0;
+            padding: 0;
+        }
+        ul li{
+            list-style: none;
+        }
+        /*定义盒子的样式*/
+        .outer{
+            height: 474px;
+            width: 600px;
+            border: dashed cadetblue 5px;
+            margin: 0 auto;
+            position: relative;
+        }
+        /*注意这里的定位是根据父级标签来绝对定位的，父级标签里面必须有relative，
+        不然会直接去到文档流外面*/
+        /*下面是让图片脱离文档流全部在盒子里面*/
+        .outer .img li{
+            position: absolute;
+            left: 0;
+            top: 0;
+            z-index: 1;
+        }
+        /*注意这里不用z-index也可以，原因是选择器按照顺序执行
+        这里设置显示出数字，并且让换行符去掉，这样li之间就没有空格
+        然后在li里面设置让数字显现出来
+        */
+        .num{
+            position: absolute;
+            /*top: 0;*/
+            bottom: 0;
+            left: 0;
+            font-size: 0;
+            z-index: 2;
+
+            /*这里设置让数字居中*/
+            /*1、但是这里是绝对定位并且脱离文档流，会忽略宽度，所以这里增加一下宽度
+              2、让这些数字之间有距离间隔，要在li里面设置magin方法
+            */
+            text-align: center;
+            width: 100%;
+        }
+        /*border-radius 向div元素添加圆角边框
+        下面设置数字，的位置、大小颜色、以及圆角
+        */
+        .num li{
+            height: 20px;
+            width: 20px;
+            background-color: rosybrown;
+            text-align: center;
+            border-radius: 60%;
+            line-height: 20px;
+            display: inline-block;
+            font-size: 16px;
+
+            margin: 5px;
+            cursor: pointer;
+        }
+        /*设置符号，这里设置宽度高度、背景颜色
+        opacity设置透明度
+        font-weight：border;设置字体的粗细，这里设置更粗
+        下面让left：0；去掉，原因是默认在左边
+        */
+        .button{
+            height: 60px;
+            width: 40px;
+            background-color: aquamarine;
+            position: absolute;
+            /*left: 0;*/
+            /*
+            这里是让这个符号位于盒子中间，
+            */
+            top: 50%;
+            margin-top: -30px;
+
+            opacity: 0.6;
+            font-size: 40px;
+            font-weight: bolder;
+            z-index: 3;
+            text-align: center;
+            line-height: 60px;
+            /*
+            这里设置让这个图片悬浮，鼠标放上去的时候显示，不放上去的时候隐藏
+            所以要在下面定义hover
+            思想:首先让他们全部消失，之后再让他们显示
+            */
+            display: none;
+        }
+        .btn_right{
+            right: 0;
+        }
+        .outer:hover .button{
+            display: block;
+            cursor: pointer;
+        }
+        /*
+        设置点击数字的颜色变化
+        这里注意，如果在标签里面设置类，中间能有空格
+        下面的li和.current之间不能有空格，意思就是li标签里面的current类
+        */
+        .outer .num li.current{
+            background-color: red;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="outer">
+        <ul class="img">
+            <li><img src="1.jpg"></li>
+            <li><img src="2.jpg"></li>
+            <li><img src="3.jpg"></li>
+            <li><img src="4.jpg"></li>
+            <li><img src="5.jpg"></li>
+            <li><img src="6.jpg"></li>
+
+        </ul>
+        <ul class="num">
+            <li>1</li>
+            <li>2</li>
+            <li>3</li>
+            <li>4</li>
+            <li>5</li>
+            <li>6</li>
+
+        </ul>
+        <div class="btn_left button"> < </div>
+        <div class="btn_right button"> > </div>
+    </div>
+<script src="jquery.js"></script>
+<script>
+    $(function(){
+//        下面设置，让第一个数字变红，以及鼠标放到其他数字上面颜色变红
+        $(".num li").first().addClass("current");
+        $(".num li").mouseover(function(){
+            $(this).addClass("current").siblings().removeClass("current");
+
+//            下面设置数字对应的图片的显示和隐藏，淡入淡出fadeIn是显示隐藏的内容，
+//            fadeOut隐藏显示的内容
+            var index=$(this).index();
+//            这里让i等于index原因是就和自动轮播联系起来了，就能实现既能自动轮播，也能手动控制
+            i=index;
+            $(".img li").eq(index).fadeIn(1000).siblings().fadeOut(1000);
+        });
+
+//        上面的是手动轮播，下面是自动轮播
+
+//        思想：利用定时器   参数：第一个参数是要执行的对象，第二个是时间
+//        1、在定时器内部实现一个函数，在函数中实现
+//        i=0,下面直接i++,让轮播直接从下标为1的位置开始,是因为默认是从第一个页面
+//        所以要从第二个开始轮播
+        i=0;
+        var time=setInterval(move,1500);
+        function move(){
+            i++;
+            if(i==6){
+                i=0;
+            }
+            $(".num li").eq(i).addClass("current").siblings().removeClass("current");
+            $(".img li").eq(i).fadeIn(1000).siblings().fadeOut(1000);
+        }
+
+//        这里鼠标放上去之后就停止轮播
+//        思想：鼠标移动到整个盒子上面之后就停止定时器，移除之后就开始定时器
+        $(".outer").hover(function(){
+            clearInterval(time);
+        },function(){
+            time=setInterval(move,1500);
+        });
+
+        $(".btn_right").click(function(){
+            move();
+        });
+        $(".btn_left").click(function(){
+            if(i==0){
+                i=6;
+            }
+            i=i-2;
+            move();
+        })
+    })
+</script>
+</body>
+</html>
